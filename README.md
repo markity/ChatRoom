@@ -21,6 +21,6 @@ $ go run ./main.go
 
 **客户端运行**
 
-1. 打开`Server`文件夹
+1. 打开`Client`文件夹
 2. 使用`Qt Creator`打开`ChatClient.pro`文件
 3. 点击`Qt Creator`左下角的`运行`按钮
