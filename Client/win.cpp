@@ -73,6 +73,7 @@ void Win::onSocketConnected() {
 	// 连接socket的剩下两个槽
 	connect(cThread, SIGNAL(messageArrived(QString)), this, SLOT(onMessageArrived(QString)));
 	connect(cThread, SIGNAL(socketDisconnected()), this, SLOT(onSocketDisconnected()));
+	ui->output->clear();
 	ui->lbStatus->setText("成功连接到服务器");
 	ui->btnDial->setText("关闭连接");ui->btnDial->setEnabled(true);ui->btnSend->setEnabled(true);
 }

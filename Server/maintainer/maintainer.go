@@ -4,6 +4,7 @@ import (
 	"chatserver/reader"
 	"chatserver/util"
 	"chatserver/writer"
+	"fmt"
 	"log"
 	"time"
 )
@@ -12,7 +13,6 @@ import (
 func ConnMaintainer() {
 	ticker := time.NewTicker(util.TimeoutUnit)
 	for {
-		// TODO 无锁架构
 		select {
 		case conn := <-util.ConnJoinChan:
 			log.Printf("ConnJoinChan...")
@@ -23,10 +23,13 @@ func ConnMaintainer() {
 				WriterStopC: writerStopC, ReaderStopC: readerStopC, MsgSenderStopC: msgSenderStopC, HeartSenderStopC: heartSenderStopC}
 			go writer.ConnWriter(conn, sendMsgChan, writerStopC)
 			go reader.ConnReader(conn, readerStopC)
+			go func() {
+				welcome := util.Pack{Type: "message", Msg: fmt.Sprintf("欢迎[%v]进入聊天室", conn.RemoteAddr())}
+				util.BoardcastMsgChan <- welcome.Marshal()
+			}()
 		case conn := <-util.UpdateHeartChan:
 			log.Printf("UpdateHeartChan...")
 			connManager, ok := util.ConnMap[conn]
-			// TODO 是否可能?
 			if ok {
 				connManager.TimeoutCount = 0
 			}
@@ -44,26 +47,29 @@ func ConnMaintainer() {
 		case conn := <-util.SendHeartChan:
 			log.Printf("SendHeartChan...")
 			connManager, ok := util.ConnMap[conn]
-			// TODO 是否可能?
 			if ok {
 				go func() {
 					select {
 					case <-connManager.HeartSenderStopC:
-					case connManager.SendMsgChan <- util.HeartPack:
+					case connManager.SendMsgChan <- []byte(`{"type":"heart"}`):
 					}
 				}()
 			}
 		case conn := <-util.ConnCloseChan:
 			log.Printf("ConnCloseChan...")
 			connManager, ok := util.ConnMap[conn]
-			// TODO 是否可能?
 			if ok {
+				remoteAddr := conn.RemoteAddr()
 				conn.Close()
 				connManager.MsgSenderStopC <- struct{}{}
 				connManager.HeartSenderStopC <- struct{}{}
 				connManager.WriterStopC <- struct{}{}
 				connManager.ReaderStopC <- struct{}{}
 				delete(util.ConnMap, conn)
+				go func() {
+					welcome := util.Pack{Type: "message", Msg: fmt.Sprintf("用户[%v]离开了聊天室", remoteAddr)}
+					util.BoardcastMsgChan <- welcome.Marshal()
+				}()
 			}
 		case <-ticker.C:
 			log.Printf("Ticker...")

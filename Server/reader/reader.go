@@ -15,25 +15,20 @@ func ConnReader(conn *net.TCPConn, stopC <-chan struct{}) {
 	log.Printf("ConnReader is running...")
 	headBuf := make([]byte, 4)
 	for {
-		// 先读包头
+		// 获取packLen
 		conn.SetReadDeadline(time.Now().Add(time.Duration(util.TimeoutMax) * util.TimeoutUnit))
 		_, err := io.ReadFull(conn, headBuf)
 		if err != nil {
-			// TODO ConnCloseChan阻塞效率不高
 			util.ConnCloseChan <- conn
 			return
 		}
-		// TODO UpdateHeartChan阻塞效率不高
 		select {
 		case <-stopC:
 			return
 		case util.UpdateHeartChan <- conn:
 		}
-
-		// 解析包头
 		packLen := binary.LittleEndian.Uint32(headBuf)
 		if packLen == 0 {
-			// TODO ConnCloseChan阻塞效率不高
 			util.ConnCloseChan <- conn
 			return
 		}
@@ -43,11 +38,9 @@ func ConnReader(conn *net.TCPConn, stopC <-chan struct{}) {
 		conn.SetReadDeadline(time.Now().Add(time.Duration(util.TimeoutMax) * util.TimeoutUnit))
 		_, err = io.ReadFull(conn, bufPack)
 		if err != nil {
-			// TODO ConnCloseChan塞效率不高
 			util.ConnCloseChan <- conn
 			return
 		}
-		// TODO UpdateHeartChan阻塞效率不高
 		select {
 		case <-stopC:
 			return
@@ -58,7 +51,6 @@ func ConnReader(conn *net.TCPConn, stopC <-chan struct{}) {
 		pack := &util.Pack{}
 		err = pack.Unmarshal(bufPack)
 		if err != nil {
-			// TODO ConnCloseChan阻塞效率不高
 			util.ConnCloseChan <- conn
 			return
 		}
@@ -66,19 +58,16 @@ func ConnReader(conn *net.TCPConn, stopC <-chan struct{}) {
 		// 处理包
 		switch {
 		case pack.Type == "heart":
-			// TODO SendHeartChan阻塞效率不高
 			util.SendHeartChan <- conn
-			continue
 		case pack.Type == "message":
 			if pack.Msg == "" {
-				// TODO ConnCloseChan阻塞效率不高
 				util.ConnCloseChan <- conn
 				return
 			}
-			sendPack := &util.Pack{Type: "message", Msg: fmt.Sprintf("[%v] %v", conn.RemoteAddr().String(), pack.Msg)}
+			sendPack := &util.Pack{Type: "message", Msg: fmt.Sprintf("[%v] [%v] %v",
+				conn.RemoteAddr().String(), time.Now().Format("2006-01-02 15:04"), pack.Msg)}
 			util.BoardcastMsgChan <- sendPack.Marshal()
 		default:
-			// TODO ConnCloseChan阻塞效率不高
 			util.ConnCloseChan <- conn
 			return
 		}

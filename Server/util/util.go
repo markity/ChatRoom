@@ -6,14 +6,17 @@ import (
 	"time"
 )
 
+// ServerAddr 运行地址
+var ServerAddr = "127.0.0.1:8000"
+
 // TimeoutUnit 超时时间
-var TimeoutUnit = time.Second * 5
+const TimeoutUnit = time.Second * 5
 
 // TimeoutMax 最大超时次数, 达到则视为断开连接
-var TimeoutMax = 3
+const TimeoutMax = 3
 
-// HeartPack 心跳包
-var HeartPack = []byte(`{"type":"heart"}`)
+// ChanCap 通道容量, 防止过多消息引起阻塞
+const ChanCap = 128
 
 // Pack 数据包
 type Pack struct {
@@ -38,7 +41,7 @@ func (p *Pack) Unmarshal(data []byte) error {
 }
 
 // BoardcastMsgChan 用于广播消息
-var BoardcastMsgChan = make(chan []byte)
+var BoardcastMsgChan = make(chan []byte, ChanCap)
 
 // ConnManager 存储关于线程的信息
 type ConnManager struct {
@@ -57,13 +60,13 @@ type ConnManager struct {
 var ConnMap = make(map[*net.TCPConn]*ConnManager)
 
 // ConnJoinChan 通知有新的连接进入
-var ConnJoinChan = make(chan *net.TCPConn)
+var ConnJoinChan = make(chan *net.TCPConn, ChanCap)
 
 // UpdateHeartChan 更新心跳计数器
-var UpdateHeartChan = make(chan *net.TCPConn)
+var UpdateHeartChan = make(chan *net.TCPConn, ChanCap)
 
 // SendHeartChan 通知向客户端发送心跳包
-var SendHeartChan = make(chan *net.TCPConn)
+var SendHeartChan = make(chan *net.TCPConn, ChanCap)
 
 // ConnCloseChan 当读, 写线程出错, 自行选择关闭
-var ConnCloseChan = make(chan *net.TCPConn)
+var ConnCloseChan = make(chan *net.TCPConn, ChanCap)
