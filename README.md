@@ -4,7 +4,7 @@
 
 ![程序图片](https://cloud-netdisk.oss-cn-chengdu.aliyuncs.com/%E9%A1%B9%E7%9B%AE%E5%9B%BE%E7%89%87ChatRoom1.png)
 
-# 如果运行?
+# 如何运行?
 
 **软件安装**
 
