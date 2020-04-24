@@ -43,22 +43,6 @@ func (p *Pack) Unmarshal(data []byte) error {
 // BoardcastMsgChan 用于广播消息
 var BoardcastMsgChan = make(chan []byte, ChanCap)
 
-// ConnManager 存储关于线程的信息
-type ConnManager struct {
-	// 用于向connWriter写入消息
-	SendMsgChan chan []byte
-	// 用于控制线程停止
-	WriterStopC      chan struct{}
-	ReaderStopC      chan struct{}
-	MsgSenderStopC   chan struct{}
-	HeartSenderStopC chan struct{}
-	// 记录超时次数
-	TimeoutCount int
-}
-
-// ConnMap 用于维护线程, 向线程发送消息
-var ConnMap = make(map[*net.TCPConn]*ConnManager)
-
 // ConnJoinChan 通知有新的连接进入
 var ConnJoinChan = make(chan *net.TCPConn, ChanCap)
 
