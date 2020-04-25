@@ -18,13 +18,17 @@ func main() {
 	}
 	log.Printf("server started at %v...", util.ServerAddr)
 
-	go maintainer.ConnMaintainer()
+	connJoinC := make(chan *net.TCPConn, util.ChanCap)
+	// 开启线程维护器
+	maintainer.NewMaintainer(connJoinC).Start()
+
+	// 阻塞接收新的连接
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
 			log.Printf("failed to AcceptTCP: %v", err)
 			continue
 		}
-		util.ConnJoinChan <- conn
+		connJoinC <- conn
 	}
 }

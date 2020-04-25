@@ -2,7 +2,6 @@ package util
 
 import (
 	"encoding/json"
-	"net"
 	"time"
 )
 
@@ -39,18 +38,3 @@ func (p *Pack) Unmarshal(data []byte) error {
 	err := json.Unmarshal(data, p)
 	return err
 }
-
-// BoardcastMsgChan 用于广播消息
-var BoardcastMsgChan = make(chan []byte, ChanCap)
-
-// ConnJoinChan 通知有新的连接进入
-var ConnJoinChan = make(chan *net.TCPConn, ChanCap)
-
-// UpdateHeartChan 更新心跳计数器
-var UpdateHeartChan = make(chan *net.TCPConn, ChanCap)
-
-// SendHeartChan 通知向客户端发送心跳包
-var SendHeartChan = make(chan *net.TCPConn, ChanCap)
-
-// ConnCloseChan 当读, 写线程出错, 自行选择关闭
-var ConnCloseChan = make(chan *net.TCPConn, ChanCap)
