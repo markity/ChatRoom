@@ -87,6 +87,9 @@ func (r *Reader) Start() {
 				if pack.Msg == "" {
 					r.ConnCloseC <- r.Conn
 					return
+				} else if len(pack.Msg) > util.MsgMaxLen {
+					r.ConnCloseC <- r.Conn
+					return
 				}
 				sendPack := &util.Pack{Type: "message", Msg: fmt.Sprintf("[%v] [%v] %v",
 					r.Conn.RemoteAddr().String(), time.Now().Format("2006-01-02 15:04"), pack.Msg)}

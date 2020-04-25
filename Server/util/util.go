@@ -8,6 +8,9 @@ import (
 // ServerAddr 运行地址
 var ServerAddr = "127.0.0.1:8000"
 
+// MsgMaxLen 一条消息的最大长度
+const MsgMaxLen = 250
+
 // TimeoutUnit 超时时间
 const TimeoutUnit = time.Second * 5
 

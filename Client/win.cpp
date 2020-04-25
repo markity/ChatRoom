@@ -98,9 +98,11 @@ void Win::on_btnSend_clicked() {
 	if (text.isEmpty()) {
 		ui->lbStatus->setText("请输入内容");
 		return;
+	} else if (text.size() > 250) {
+		ui->lbStatus->setText("发送内容仅限250个字节");
+		return;
 	}
 	ui->input->clear();
-
 	emit sendMessage(text);
 }
 
